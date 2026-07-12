@@ -1,11 +1,14 @@
 import express from "express";
 import cors from "cors";
 import { getMetrics } from "./metrics.js";
+import { startTemperatureHistory } from "./temperatureHistory.js";
 
 const app = express();
 const port = process.env.PORT ?? 3001;
 
 app.use(cors());
+
+startTemperatureHistory();
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });

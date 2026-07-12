@@ -12,6 +12,7 @@ describe("getMetrics", () => {
     expect(metrics.cpu.loadPercent).toBeGreaterThanOrEqual(0);
     expect(typeof metrics.cpu.cores).toBe("number");
     expect(metrics.cpu.cores).toBeGreaterThan(0);
+    expect(Array.isArray(metrics.cpu.temperatureHistory)).toBe(true);
 
     expect(metrics.memory.totalBytes).toBeGreaterThan(0);
     expect(metrics.memory.usedPercent).toBeGreaterThanOrEqual(0);
