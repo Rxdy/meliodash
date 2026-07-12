@@ -1,0 +1,11 @@
+# Suivi de projet et contexte agent (perso, non versionnés)
+tracking/
+agent/
+
+# OS
+.DS_Store
+
+# Env
+.env
+.env.*
+!.env.example
