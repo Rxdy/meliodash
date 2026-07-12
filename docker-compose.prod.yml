@@ -1,0 +1,28 @@
+services:
+  front:
+    image: ghcr.io/rxdy/meliodash-front:latest
+    container_name: meliodash-front
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+      - traefik.enable=true
+      - traefik.http.routers.meliodash.entrypoints=websecure
+      - traefik.http.routers.meliodash.rule=Host(`meliodash.rxdy.fr`)
+      - traefik.http.routers.meliodash.tls.certresolver=leresolver
+      - traefik.http.services.meliodash.loadbalancer.server.port=80
+    networks:
+      - web
+
+  back:
+    image: ghcr.io/rxdy/meliodash-back:latest
+    container_name: meliodash-back
+    restart: unless-stopped
+    network_mode: host
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+
+networks:
+  web:
+    external: true

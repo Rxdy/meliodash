@@ -47,6 +47,15 @@ Workflow GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) :
 - Sur chaque push/PR vers `main` ou `dev` : lint + typecheck + tests (front et back).
 - Sur push vers `main` uniquement : build et push des images sur GHCR (`ghcr.io/rxdy/meliodash-front`, `ghcr.io/rxdy/meliodash-back`), taguées `latest` et par SHA.
 
+## Déploiement
+
+Sur le Pi, `docker-compose.prod.yml` utilise les images publiées sur GHCR (au lieu de builder localement) et ajoute les labels Traefik (routage `meliodash.rxdy.fr`, réseau externe `web`) et Watchtower (`com.centurylinklabs.watchtower.enable=true`) :
+
+```bash
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
+```
+
 ## Branches
 
 - `main` — branche de prod, surveillée par [Watchtower](https://containrrr.dev/watchtower/) sur le Pi pour l'auto-déploiement des nouvelles images.
