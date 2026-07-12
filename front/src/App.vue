@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useMetrics } from './composables/useMetrics'
-import MetricCard from './components/MetricCard.vue'
+import MetricRow from './components/MetricRow.vue'
+import MetricMeter from './components/MetricMeter.vue'
+import TemperatureChart from './components/TemperatureChart.vue'
 import { formatBytes, formatSpeed, formatUptime } from './format'
 
 const { metrics, error } = useMetrics()
@@ -27,40 +29,48 @@ const { metrics, error } = useMetrics()
 
     <section
       v-if="metrics"
-      class="grid"
+      class="rows"
     >
-      <MetricCard
-        title="CPU"
+      <MetricRow
+        label="CPU"
         :value="`${metrics.cpu.loadPercent}%`"
-        :percent="metrics.cpu.loadPercent"
-      />
-      <MetricCard
-        title="Température"
-        :value="metrics.cpu.temperatureCelsius !== null ? `${metrics.cpu.temperatureCelsius}°C` : 'N/A'"
-      />
-      <MetricCard
-        title="RAM"
-        :value="`${formatBytes(metrics.memory.usedBytes)} / ${formatBytes(metrics.memory.totalBytes)}`"
-        :percent="metrics.memory.usedPercent"
-      />
-      <MetricCard
-        title="Uptime"
-        :value="formatUptime(metrics.uptimeSeconds)"
-      />
+      >
+        <MetricMeter :percent="metrics.cpu.loadPercent" />
+      </MetricRow>
 
-      <MetricCard
+      <MetricRow
+        label="Température"
+        :value="metrics.cpu.temperatureCelsius !== null ? `${metrics.cpu.temperatureCelsius}°C` : 'N/A'"
+      >
+        <TemperatureChart :history="metrics.cpu.temperatureHistory" />
+      </MetricRow>
+
+      <MetricRow
+        label="RAM"
+        :value="`${formatBytes(metrics.memory.usedBytes)} / ${formatBytes(metrics.memory.totalBytes)}`"
+      >
+        <MetricMeter :percent="metrics.memory.usedPercent" />
+      </MetricRow>
+
+      <MetricRow
         v-for="disk in metrics.disks"
         :key="disk.mount"
-        :title="`Disque ${disk.mount}`"
+        :label="`Disque ${disk.mount}`"
         :value="`${formatBytes(disk.usedBytes)} / ${formatBytes(disk.sizeBytes)}`"
-        :percent="disk.usedPercent"
-      />
+      >
+        <MetricMeter :percent="disk.usedPercent" />
+      </MetricRow>
 
-      <MetricCard
+      <MetricRow
         v-for="net in metrics.network"
         :key="net.iface"
-        :title="`Réseau ${net.iface}`"
+        :label="`Réseau ${net.iface}`"
         :value="`↓ ${formatSpeed(net.rxSec)} · ↑ ${formatSpeed(net.txSec)}`"
+      />
+
+      <MetricRow
+        label="Uptime"
+        :value="formatUptime(metrics.uptimeSeconds)"
       />
     </section>
 
@@ -72,9 +82,9 @@ const { metrics, error } = useMetrics()
 
 <style scoped>
 main {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
+  padding: 1.5rem 1.25rem 3rem;
 }
 
 header {
@@ -94,12 +104,12 @@ h1 {
 }
 
 .error {
-  color: var(--danger);
+  color: var(--critical);
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+.rows {
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 </style>

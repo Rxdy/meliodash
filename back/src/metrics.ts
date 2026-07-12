@@ -1,4 +1,5 @@
 import si from "systeminformation";
+import { getTemperatureHistory, type TemperaturePoint } from "./temperatureHistory.js";
 
 export interface Metrics {
   timestamp: number;
@@ -7,6 +8,7 @@ export interface Metrics {
     loadPercent: number;
     cores: number;
     temperatureCelsius: number | null;
+    temperatureHistory: TemperaturePoint[];
   };
   memory: {
     totalBytes: number;
@@ -57,6 +59,7 @@ export async function getMetrics(): Promise<Metrics> {
       loadPercent: Math.round(load.currentLoad * 10) / 10,
       cores: load.cpus.length,
       temperatureCelsius: temp.main >= 0 ? Math.round(temp.main * 10) / 10 : null,
+      temperatureHistory: getTemperatureHistory(),
     },
     memory: {
       totalBytes: mem.total,

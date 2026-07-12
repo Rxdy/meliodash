@@ -7,6 +7,7 @@ export interface Metrics {
     loadPercent: number
     cores: number
     temperatureCelsius: number | null
+    temperatureHistory: Array<{ timestamp: number; value: number }>
   }
   memory: {
     totalBytes: number
