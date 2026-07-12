@@ -1,6 +1,7 @@
 # Suivi de projet et contexte agent (perso, non versionnés)
 tracking/
 agent/
+.claude/
 
 # OS
 .DS_Store

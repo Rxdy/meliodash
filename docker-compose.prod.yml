@@ -3,8 +3,6 @@ services:
     image: ghcr.io/rxdy/meliodash-front:latest
     container_name: meliodash-front
     restart: unless-stopped
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     labels:
       - com.centurylinklabs.watchtower.enable=true
       - traefik.enable=true
