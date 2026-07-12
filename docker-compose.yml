@@ -6,13 +6,17 @@ services:
     restart: unless-stopped
     ports:
       - "8081:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - back
 
+  # network_mode: host donne au back un accès direct aux interfaces réseau
+  # de la machine hôte (Raspberry Pi ou machine de dev), pour que /api/metrics
+  # reflète le vrai réseau physique et non une interface virtuelle du container.
   back:
     build:
       context: ./back
     container_name: meliodash-back
     restart: unless-stopped
-    ports:
-      - "3001:3001"
+    network_mode: host

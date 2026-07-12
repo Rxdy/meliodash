@@ -26,6 +26,20 @@ export interface Metrics {
   }>;
 }
 
+// Docker bind-mounts (/etc/resolv.conf, /etc/hostname, ...) show up as extra
+// entries pointing at the same underlying filesystem; keep one per (size, used).
+function dedupeDisks(disks: si.Systeminformation.FsSizeData[]) {
+  const seen = new Map<string, si.Systeminformation.FsSizeData>();
+  for (const disk of disks) {
+    const key = `${disk.size}:${disk.used}`;
+    const existing = seen.get(key);
+    if (!existing || disk.mount.length < existing.mount.length) {
+      seen.set(key, disk);
+    }
+  }
+  return [...seen.values()];
+}
+
 export async function getMetrics(): Promise<Metrics> {
   const [load, mem, temp, fsSize, netStats, time] = await Promise.all([
     si.currentLoad(),
@@ -49,7 +63,7 @@ export async function getMetrics(): Promise<Metrics> {
       usedBytes: mem.active,
       usedPercent: Math.round((mem.active / mem.total) * 1000) / 10,
     },
-    disks: fsSize.map((d) => ({
+    disks: dedupeDisks(fsSize).map((d) => ({
       mount: d.mount,
       sizeBytes: d.size,
       usedBytes: d.used,
