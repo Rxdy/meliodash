@@ -9,9 +9,17 @@ defineProps<{
 <template>
   <div class="card">
     <h3>{{ title }}</h3>
-    <p class="value">{{ value }}</p>
-    <div v-if="percent !== undefined" class="bar">
-      <div class="bar-fill" :style="{ width: `${Math.min(percent, 100)}%` }" />
+    <p class="value">
+      {{ value }}
+    </p>
+    <div
+      v-if="percent !== undefined"
+      class="bar"
+    >
+      <div
+        class="bar-fill"
+        :style="{ width: `${Math.min(percent, 100)}%` }"
+      />
     </div>
   </div>
 </template>

@@ -1,37 +1,39 @@
 <script setup lang="ts">
 import { useMetrics } from './composables/useMetrics'
 import MetricCard from './components/MetricCard.vue'
+import { formatBytes, formatSpeed, formatUptime } from './format'
 
 const { metrics, error } = useMetrics()
-
-function formatBytes(bytes: number) {
-  return `${(bytes / 1024 ** 3).toFixed(1)} Go`
-}
-
-function formatUptime(seconds: number) {
-  const days = Math.floor(seconds / 86400)
-  const hours = Math.floor((seconds % 86400) / 3600)
-  return `${days}j ${hours}h`
-}
-
-function formatSpeed(bytesPerSec: number) {
-  return `${(bytesPerSec / 1024 ** 2).toFixed(2)} Mo/s`
-}
 </script>
 
 <template>
   <main>
     <header>
       <h1>meliodash</h1>
-      <p v-if="metrics" class="updated">
+      <p
+        v-if="metrics"
+        class="updated"
+      >
         MAJ {{ new Date(metrics.timestamp).toLocaleTimeString() }}
       </p>
     </header>
 
-    <p v-if="error" class="error">Erreur : {{ error }}</p>
+    <p
+      v-if="error"
+      class="error"
+    >
+      Erreur : {{ error }}
+    </p>
 
-    <section v-if="metrics" class="grid">
-      <MetricCard title="CPU" :value="`${metrics.cpu.loadPercent}%`" :percent="metrics.cpu.loadPercent" />
+    <section
+      v-if="metrics"
+      class="grid"
+    >
+      <MetricCard
+        title="CPU"
+        :value="`${metrics.cpu.loadPercent}%`"
+        :percent="metrics.cpu.loadPercent"
+      />
       <MetricCard
         title="Température"
         :value="metrics.cpu.temperatureCelsius !== null ? `${metrics.cpu.temperatureCelsius}°C` : 'N/A'"
@@ -41,7 +43,10 @@ function formatSpeed(bytesPerSec: number) {
         :value="`${formatBytes(metrics.memory.usedBytes)} / ${formatBytes(metrics.memory.totalBytes)}`"
         :percent="metrics.memory.usedPercent"
       />
-      <MetricCard title="Uptime" :value="formatUptime(metrics.uptimeSeconds)" />
+      <MetricCard
+        title="Uptime"
+        :value="formatUptime(metrics.uptimeSeconds)"
+      />
 
       <MetricCard
         v-for="disk in metrics.disks"
@@ -59,7 +64,9 @@ function formatSpeed(bytesPerSec: number) {
       />
     </section>
 
-    <p v-else-if="!error">Chargement...</p>
+    <p v-else-if="!error">
+      Chargement...
+    </p>
   </main>
 </template>
 

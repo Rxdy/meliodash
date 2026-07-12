@@ -16,6 +16,7 @@ app.get("/api/metrics", async (_req, res) => {
     const metrics = await getMetrics();
     res.json(metrics);
   } catch (err) {
+    console.error("failed to read metrics", err);
     res.status(500).json({ error: "failed to read metrics" });
   }
 });
