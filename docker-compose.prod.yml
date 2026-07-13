@@ -27,10 +27,13 @@ services:
       - traefik.http.routers.metryx-docker.priority=10
       - traefik.http.routers.metryx-docker.service=metryx
       # Rate limit d'abord (throttle les tentatives avant même de vérifier le
-      # mot de passe), Basic Auth ensuite.
+      # mot de passe), Basic Auth ensuite. Seuil calé au-dessus de l'usage
+      # normal : la page /docker interroge /api/docker toutes les 5s tant
+      # qu'elle est ouverte (~12 req/min à elle seule) — 5/min aurait aussi
+      # bloqué un usage légitime, pas seulement le bruteforce.
       - traefik.http.routers.metryx-docker.middlewares=metryx-docker-ratelimit,metryx-docker-auth
-      - traefik.http.middlewares.metryx-docker-ratelimit.ratelimit.average=5
-      - traefik.http.middlewares.metryx-docker-ratelimit.ratelimit.burst=10
+      - traefik.http.middlewares.metryx-docker-ratelimit.ratelimit.average=30
+      - traefik.http.middlewares.metryx-docker-ratelimit.ratelimit.burst=60
       - traefik.http.middlewares.metryx-docker-ratelimit.ratelimit.period=1m
       # Identifiants dans .env (non versionné) — voir .env.example.
       - traefik.http.middlewares.metryx-docker-auth.basicauth.users=${METRYX_DOCKER_AUTH}

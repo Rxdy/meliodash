@@ -20,7 +20,7 @@ export interface DockerInfo {
   groups: DockerGroup[]
 }
 
-const POLL_INTERVAL_MS = 5000
+const POLL_INTERVAL_MS = 15000
 
 export function useDocker() {
   const docker = ref<DockerInfo | null>(null)
