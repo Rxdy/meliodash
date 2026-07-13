@@ -9,6 +9,23 @@ services:
     depends_on:
       - back
 
+  # Donne au back une vue en lecture seule sur la liste des containers, sans
+  # jamais lui exposer le vrai socket Docker : le proxy n'autorise que GET sur
+  # /containers (pas de create/start/stop/exec), et n'écoute que sur la loopback
+  # de l'hôte. Un back compromis peut au pire lister les containers, pas piloter
+  # le démon Docker.
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy@sha256:1f3a6f303320723d199d2316a3e82b2e2685d86c275d5e3deeaf182573b47476
+    container_name: metryx-docker-proxy
+    restart: unless-stopped
+    environment:
+      CONTAINERS: 1
+      POST: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "127.0.0.1:2375:2375"
+
   # network_mode: host donne au back un accès direct aux interfaces réseau
   # de la machine hôte (Raspberry Pi ou machine de dev), pour que /api/metrics
   # reflète le vrai réseau physique et non une interface virtuelle du container.
@@ -18,3 +35,8 @@ services:
     container_name: metryx-back
     restart: unless-stopped
     network_mode: host
+    environment:
+      DOCKER_PROXY_HOST: 127.0.0.1
+      DOCKER_PROXY_PORT: 2375
+    depends_on:
+      - docker-proxy
