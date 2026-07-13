@@ -6,18 +6,59 @@ services:
     labels:
       - com.centurylinklabs.watchtower.enable=true
       - traefik.enable=true
+      - traefik.http.services.metryx.loadbalancer.server.port=80
+      # Routeur public : tout metryx.rxdy.fr, sauf la page containers ci-dessous.
       - traefik.http.routers.metryx.entrypoints=websecure
       - traefik.http.routers.metryx.rule=Host(`metryx.rxdy.fr`)
       - traefik.http.routers.metryx.tls.certresolver=leresolver
-      - traefik.http.services.metryx.loadbalancer.server.port=80
+      - traefik.http.routers.metryx.priority=1
+      # Routeur protégé : la page /docker et son API révèlent les noms des
+      # projets hébergés sur le Pi (contrairement aux métriques CPU/RAM/disque,
+      # génériques) — on les met derrière Basic Auth + rate limiting. Priorité
+      # plus haute pour être évalué avant le routeur public ci-dessus.
+      - traefik.http.routers.metryx-docker.entrypoints=websecure
+      - traefik.http.routers.metryx-docker.rule=Host(`metryx.rxdy.fr`) && (PathPrefix(`/docker`) || PathPrefix(`/api/docker`))
+      - traefik.http.routers.metryx-docker.tls.certresolver=leresolver
+      - traefik.http.routers.metryx-docker.priority=10
+      - traefik.http.routers.metryx-docker.service=metryx
+      # Rate limit d'abord (throttle les tentatives avant même de vérifier le
+      # mot de passe), Basic Auth ensuite.
+      - traefik.http.routers.metryx-docker.middlewares=metryx-docker-ratelimit,metryx-docker-auth
+      - traefik.http.middlewares.metryx-docker-ratelimit.ratelimit.average=5
+      - traefik.http.middlewares.metryx-docker-ratelimit.ratelimit.burst=10
+      - traefik.http.middlewares.metryx-docker-ratelimit.ratelimit.period=1m
+      # Identifiants dans .env (non versionné) — voir .env.example.
+      - traefik.http.middlewares.metryx-docker-auth.basicauth.users=${METRYX_DOCKER_AUTH}
     networks:
       - web
+
+  # Donne au back une vue en lecture seule sur la liste des containers, sans
+  # jamais lui exposer le vrai socket Docker : le proxy n'autorise que GET sur
+  # /containers (pas de create/start/stop/exec), et n'écoute que sur la loopback
+  # de l'hôte. Un back compromis peut au pire lister les containers, pas piloter
+  # le démon Docker.
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy@sha256:1f3a6f303320723d199d2316a3e82b2e2685d86c275d5e3deeaf182573b47476
+    container_name: metryx-docker-proxy
+    restart: unless-stopped
+    environment:
+      CONTAINERS: 1
+      POST: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "127.0.0.1:2375:2375"
 
   back:
     image: ghcr.io/rxdy/metryx-back:latest
     container_name: metryx-back
     restart: unless-stopped
     network_mode: host
+    environment:
+      DOCKER_PROXY_HOST: 127.0.0.1
+      DOCKER_PROXY_PORT: 2375
+    depends_on:
+      - docker-proxy
     labels:
       - com.centurylinklabs.watchtower.enable=true
 
