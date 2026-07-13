@@ -12,7 +12,6 @@ describe("getMetrics", () => {
     expect(metrics.cpu.loadPercent).toBeGreaterThanOrEqual(0);
     expect(typeof metrics.cpu.cores).toBe("number");
     expect(metrics.cpu.cores).toBeGreaterThan(0);
-    expect(Array.isArray(metrics.cpu.temperatureHistory)).toBe(true);
 
     expect(metrics.memory.totalBytes).toBeGreaterThan(0);
     expect(metrics.memory.usedPercent).toBeGreaterThanOrEqual(0);
@@ -20,5 +19,13 @@ describe("getMetrics", () => {
 
     expect(Array.isArray(metrics.disks)).toBe(true);
     expect(Array.isArray(metrics.network)).toBe(true);
+
+    expect(Array.isArray(metrics.history.cpu)).toBe(true);
+    expect(Array.isArray(metrics.history.memory)).toBe(true);
+    expect(Array.isArray(metrics.history.temperature)).toBe(true);
+    expect(Array.isArray(metrics.history.networkRx)).toBe(true);
+    expect(Array.isArray(metrics.history.networkTx)).toBe(true);
+
+    expect(typeof metrics.throttle.supported).toBe("boolean");
   });
 });

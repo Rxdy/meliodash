@@ -1,12 +1,12 @@
-# meliodash
+# Metryx
 
-Dashboard de contrôle des données d'un Raspberry Pi 5 : CPU, RAM, température, disque et réseau, consultable depuis un navigateur (mobile ou desktop).
+Dashboard de monitoring système : CPU, RAM, température, disque et réseau, consultable depuis un navigateur (mobile ou desktop). Fonctionne sur n'importe quelle machine Linux — cette instance tourne sur un Raspberry Pi 5.
 
-Hébergé directement sur le Pi, exposé via **meliodash.rxdy.fr**.
+Hébergé directement sur le Pi, exposé via **metryx.rxdy.fr**.
 
 ## Stack
 
-- **front/** — Vue 3 + TypeScript (Vite), servi en statique par Nginx
+- **front/** — Vue 3 + TypeScript (Vite), servi en statique par Nginx, graphiques via Chart.js
 - **back/** — Node.js + TypeScript (Express + [systeminformation](https://systeminformation.io/)), expose `GET /api/metrics`
 - **Docker Compose** pour orchestrer les deux services
 
@@ -15,7 +15,7 @@ navigateur → front (Nginx) ─┬─ sert le SPA
                              └─ proxy /api/* → back (Express)
 ```
 
-Le service `back` tourne en `network_mode: host` : c'est nécessaire pour que `/api/metrics` reflète le vrai matériel du Pi (interfaces réseau, notamment) et non un réseau virtuel de container. Le `front` reste isolé sur le réseau Docker classique et joint le back via `host.docker.internal`.
+Le service `back` tourne en `network_mode: host` : c'est nécessaire pour que `/api/metrics` reflète le vrai matériel de la machine (interfaces réseau, notamment) et non un réseau virtuel de container. Le `front` reste isolé sur le réseau Docker classique et joint le back via sa propre passerelle réseau, résolue dynamiquement au démarrage (voir `front/docker-entrypoint.sh`).
 
 ## Lancer en local
 
@@ -45,11 +45,11 @@ npm run build         # build de prod
 Workflow GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) :
 
 - Sur chaque push/PR vers `main` ou `dev` : lint + typecheck + tests (front et back).
-- Sur push vers `main` uniquement : build et push des images sur GHCR (`ghcr.io/rxdy/meliodash-front`, `ghcr.io/rxdy/meliodash-back`), taguées `latest` et par SHA.
+- Sur push vers `main` uniquement : build et push des images sur GHCR (`ghcr.io/rxdy/metryx-front`, `ghcr.io/rxdy/metryx-back`), taguées `latest` et par SHA, en multi-arch (amd64 + arm64) pour tourner sur le Pi.
 
 ## Déploiement
 
-Sur le Pi, `docker-compose.prod.yml` utilise les images publiées sur GHCR (au lieu de builder localement) et ajoute les labels Traefik (routage `meliodash.rxdy.fr`, réseau externe `web`) et Watchtower (`com.centurylinklabs.watchtower.enable=true`) :
+Sur le Pi, `docker-compose.prod.yml` utilise les images publiées sur GHCR (au lieu de builder localement) et ajoute les labels Traefik (routage `metryx.rxdy.fr`, réseau externe `web`) et Watchtower (`com.centurylinklabs.watchtower.enable=true`) :
 
 ```bash
 docker compose -f docker-compose.prod.yml pull

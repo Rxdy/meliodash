@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Compute lowercase image name
-        run: echo "IMAGE=ghcr.io/$(echo '${{ github.repository_owner }}/meliodash-${{ matrix.service }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+        run: echo "IMAGE=ghcr.io/$(echo '${{ github.repository_owner }}/metryx-${{ matrix.service }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
 
       - uses: docker/setup-qemu-action@v3
 

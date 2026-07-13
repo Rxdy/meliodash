@@ -2,7 +2,7 @@ services:
   front:
     build:
       context: ./front
-    container_name: meliodash-front
+    container_name: metryx-front
     restart: unless-stopped
     ports:
       - "8081:80"
@@ -15,6 +15,6 @@ services:
   back:
     build:
       context: ./back
-    container_name: meliodash-back
+    container_name: metryx-back
     restart: unless-stopped
     network_mode: host
