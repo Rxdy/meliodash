@@ -1,13 +1,23 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 
+export interface ThrottleStatus {
+  supported: boolean
+  undervoltage: boolean
+  throttled: boolean
+  temperatureLimit: boolean
+  undervoltageOccurred: boolean
+  throttledOccurred: boolean
+  temperatureLimitOccurred: boolean
+}
+
 export interface Metrics {
   timestamp: number
   uptimeSeconds: number
+  throttle: ThrottleStatus
   cpu: {
     loadPercent: number
     cores: number
     temperatureCelsius: number | null
-    temperatureHistory: Array<{ timestamp: number; value: number }>
   }
   memory: {
     totalBytes: number
@@ -25,6 +35,18 @@ export interface Metrics {
     rxSec: number
     txSec: number
   }>
+  history: {
+    cpu: HistoryPoint[]
+    memory: HistoryPoint[]
+    temperature: HistoryPoint[]
+    networkRx: HistoryPoint[]
+    networkTx: HistoryPoint[]
+  }
+}
+
+export interface HistoryPoint {
+  timestamp: number
+  value: number
 }
 
 const POLL_INTERVAL_MS = 3000

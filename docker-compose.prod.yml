@@ -1,21 +1,21 @@
 services:
   front:
-    image: ghcr.io/rxdy/meliodash-front:latest
-    container_name: meliodash-front
+    image: ghcr.io/rxdy/metryx-front:latest
+    container_name: metryx-front
     restart: unless-stopped
     labels:
       - com.centurylinklabs.watchtower.enable=true
       - traefik.enable=true
-      - traefik.http.routers.meliodash.entrypoints=websecure
-      - traefik.http.routers.meliodash.rule=Host(`meliodash.rxdy.fr`)
-      - traefik.http.routers.meliodash.tls.certresolver=leresolver
-      - traefik.http.services.meliodash.loadbalancer.server.port=80
+      - traefik.http.routers.metryx.entrypoints=websecure
+      - traefik.http.routers.metryx.rule=Host(`metryx.rxdy.fr`)
+      - traefik.http.routers.metryx.tls.certresolver=leresolver
+      - traefik.http.services.metryx.loadbalancer.server.port=80
     networks:
       - web
 
   back:
-    image: ghcr.io/rxdy/meliodash-back:latest
-    container_name: meliodash-back
+    image: ghcr.io/rxdy/metryx-back:latest
+    container_name: metryx-back
     restart: unless-stopped
     network_mode: host
     labels:
