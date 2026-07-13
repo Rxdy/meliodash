@@ -3,6 +3,11 @@ services:
     image: ghcr.io/rxdy/metryx-front:latest
     container_name: metryx-front
     restart: unless-stopped
+    environment:
+      # Doit correspondre au PORT du service back ci-dessous : le Pi héberge
+      # plusieurs services en network_mode: host qui se partagent le même
+      # espace de ports, 3001 est déjà pris par un autre projet.
+      BACKEND_PORT: 3011
     labels:
       - com.centurylinklabs.watchtower.enable=true
       - traefik.enable=true
@@ -55,6 +60,7 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
+      PORT: 3011
       DOCKER_PROXY_HOST: 127.0.0.1
       DOCKER_PROXY_PORT: 2375
     depends_on:
