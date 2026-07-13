@@ -8,6 +8,11 @@ set -e
 BACKEND_HOST=$(ip route | awk '/^default/ { print $3; exit }')
 export BACKEND_HOST
 
-envsubst '${BACKEND_HOST}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf
+# Surchargeable : sur un hôte où plusieurs services network_mode:host se
+# partagent l'espace de ports, back peut tourner sur un port autre que 3001.
+BACKEND_PORT="${BACKEND_PORT:-3001}"
+export BACKEND_PORT
+
+envsubst '${BACKEND_HOST} ${BACKEND_PORT}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf
 
 exec nginx -g 'daemon off;'
