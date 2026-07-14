@@ -16,7 +16,7 @@ services:
       - traefik.http.routers.metryx.entrypoints=websecure
       - traefik.http.routers.metryx.rule=Host(`metryx.rxdy.fr`)
       - traefik.http.routers.metryx.tls.certresolver=leresolver
-      - traefik.http.routers.metryx.priority=1
+      - traefik.http.routers.metryx.priority=2
       # Routeur protégé : la page /docker et son API révèlent les noms des
       # projets hébergés sur le Pi (contrairement aux métriques CPU/RAM/disque,
       # génériques) — on les met derrière Basic Auth + rate limiting. Priorité
