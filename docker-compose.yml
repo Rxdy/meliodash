@@ -38,5 +38,9 @@ services:
     environment:
       DOCKER_PROXY_HOST: 127.0.0.1
       DOCKER_PROXY_PORT: 2375
+      # Auth de dev uniquement (mot de passe : "devlogin") — sans conséquence,
+      # jamais utilisé en prod (voir docker-compose.prod.yml + .env).
+      SESSION_SECRET: dev-only-not-a-real-secret
+      DOCKER_PAGE_PASSWORD_HASH: $$2b$$10$$wkj93AIijNr40JLAyF0bSeXYQYC7L.nllSdvFWvGY8x2IG5Fz6Y7G
     depends_on:
       - docker-proxy

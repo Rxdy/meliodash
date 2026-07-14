@@ -19,24 +19,24 @@ services:
       - traefik.http.routers.metryx.priority=2
       # Routeur protégé : la page /docker et son API révèlent les noms des
       # projets hébergés sur le Pi (contrairement aux métriques CPU/RAM/disque,
-      # génériques) — on les met derrière Basic Auth + rate limiting. Priorité
-      # plus haute pour être évalué avant le routeur public ci-dessus.
+      # génériques). L'authentification elle-même est vérifiée dans back (session
+      # par cookie signé, voir back/src/auth.ts) et non ici : Traefik ne fait que
+      # du rate limiting sur ces routes (notamment /api/auth/login, contre le
+      # bruteforce) — une vérification uniquement côté proxy serait contournable
+      # en tapant directement le port du back (network_mode: host).
       - traefik.http.routers.metryx-docker.entrypoints=websecure
-      - traefik.http.routers.metryx-docker.rule=Host(`metryx.rxdy.fr`) && (PathPrefix(`/docker`) || PathPrefix(`/api/docker`))
+      - traefik.http.routers.metryx-docker.rule=Host(`metryx.rxdy.fr`) && (PathPrefix(`/docker`) || PathPrefix(`/api/docker`) || PathPrefix(`/api/auth`))
       - traefik.http.routers.metryx-docker.tls.certresolver=leresolver
       - traefik.http.routers.metryx-docker.priority=10
       - traefik.http.routers.metryx-docker.service=metryx
-      # Rate limit d'abord (throttle les tentatives avant même de vérifier le
-      # mot de passe), Basic Auth ensuite. Seuil calé au-dessus de l'usage
-      # normal : la page /docker interroge /api/docker toutes les 5s tant
-      # qu'elle est ouverte (~12 req/min à elle seule) — 5/min aurait aussi
-      # bloqué un usage légitime, pas seulement le bruteforce.
-      - traefik.http.routers.metryx-docker.middlewares=metryx-docker-ratelimit,metryx-docker-auth
+      # Seuil calé au-dessus de l'usage normal : la page /docker interroge
+      # /api/docker toutes les 15s tant qu'elle est ouverte (~4 req/min) — un
+      # seuil trop bas bloquerait aussi un usage légitime, pas seulement le
+      # bruteforce sur /api/auth/login.
+      - traefik.http.routers.metryx-docker.middlewares=metryx-docker-ratelimit
       - traefik.http.middlewares.metryx-docker-ratelimit.ratelimit.average=30
       - traefik.http.middlewares.metryx-docker-ratelimit.ratelimit.burst=60
       - traefik.http.middlewares.metryx-docker-ratelimit.ratelimit.period=1m
-      # Identifiants dans .env (non versionné) — voir .env.example.
-      - traefik.http.middlewares.metryx-docker-auth.basicauth.users=${METRYX_DOCKER_AUTH}
     networks:
       - web
 
@@ -66,6 +66,11 @@ services:
       PORT: 3011
       DOCKER_PROXY_HOST: 127.0.0.1
       DOCKER_PROXY_PORT: 2375
+      # Session de la page /docker — identifiants réels dans .env (non
+      # versionné), voir .env.example.
+      SESSION_SECRET: ${SESSION_SECRET}
+      DOCKER_PAGE_PASSWORD_HASH: ${DOCKER_PAGE_PASSWORD_HASH}
+      COOKIE_SECURE: "true"
     depends_on:
       - docker-proxy
     labels:
